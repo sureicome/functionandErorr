@@ -1,40 +1,39 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-
-error CANT_WIDTHDREW_THIS_AMOUNT();
-error BALANCEOF_OWNER_MOST_BE_MORE_THAN_ZERO();
-
-contract FunctionANDError {
-    mapping(address => uint256) user;
-    address owner;
+contract ErrorHandlingDemo {
     
-    modifier onlyowner() {
-        require(msg.sender == owner, "your not the owner on this contract");
-        _;
-    }
+    uint256 public positiveNumber;
+
+    address public owner;
 
     constructor() {
         owner = msg.sender;
     }
 
-    function chick(address _userIf, uint256 _num) external payable {
-        require(_userIf == address(0), 'address zero not valid');
-        require(msg.value > 0, "amount most be more than zero");
-        user[_userIf] += _num;
+    function setPositiveNumber(uint256 _number) public {
+        require(_number > 0, "Number must be positive");
+        
+        positiveNumber = _number;
     }
 
-    function merro(address _address) public view returns (uint256) {
-        if (_address == address(0)) {
-            revert("adderss zero not valid");
+    function divideNumbers(uint256 _numerator, uint256 _denominator) public pure returns (uint256) {
+        require(_denominator != 0, "Denominator cannot be zero");
+
+        uint256 result = _numerator / _denominator;
+
+        assert(result * _denominator == _numerator);
+
+        return result;
+    }
+
+    function withdraw() public {
+        if (msg.sender != owner) {
+            revert("Only the owner can withdraw funds");
         }
-        return user[_address];
+
+        payable(owner).transfer(address(this).balance);
     }
 
-    function payuser(uint256 _amount) external onlyowner{
-        assert(user[msg.sender] >= _amount);
-
-        user[msg.sender] -= _amount;
-        payable(msg.sender).transfer(_amount);
-    }
+    receive() external payable {}
 }
