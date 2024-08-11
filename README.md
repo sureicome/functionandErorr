@@ -1,73 +1,88 @@
-ErrorHandlingDemo Smart Contract
-Overview
-The ErrorHandlingDemo smart contract demonstrates the use of Solidity's error-handling mechanisms: require(), assert(), and revert(). These functions are essential for ensuring that specific conditions are met during contract execution, providing robust error handling and security.
+# SimpleWallet Contract
 
-Features
-Store a Positive Number: Allows users to store a positive number in the contract.
-Divide Numbers: Provides a safe division function that ensures the denominator is non-zero and validates the operation using assertions.
-Withdraw Ether: Allows the contract owner to withdraw all Ether from the contract.
-Receive Ether: The contract can receive Ether from external accounts.
-Contract Details
-State Variables
-positiveNumber: A uint256 variable that stores a positive number set by the user.
-owner: An address variable that stores the contract owner's address. It is set to the deployer's address during contract creation.
-Constructor
-solidity
-Copy code
-constructor() {
-    owner = msg.sender;
-}
-Purpose: The constructor sets the deployer as the contract owner.
-Functions
-setPositiveNumber
-solidity
-Copy code
-function setPositiveNumber(uint256 _number) public
-Purpose: Sets the positiveNumber variable to the input value, but only if the input is greater than zero.
-Error Handling: Uses require() to ensure the number is positive. If _number is not positive, the transaction reverts with the message "Number must be positive".
-divideNumbers
-solidity
-Copy code
-function divideNumbers(uint256 _numerator, uint256 _denominator) public pure returns (uint256)
-Purpose: Divides the numerator by the denominator and returns the result.
-Error Handling:
-Uses require() to ensure the denominator is not zero, reverting with "Denominator cannot be zero" if it is.
-Uses assert() to confirm that the multiplication of the result by the denominator equals the numerator, catching any unexpected internal errors.
-withdraw
-solidity
-Copy code
-function withdraw() public
-Purpose: Allows the contract owner to withdraw all Ether stored in the contract.
-Error Handling:
-Uses revert() within an if statement to ensure that only the owner can withdraw funds. If the caller is not the owner, the transaction reverts with "Only the owner can withdraw funds".
-receive
-solidity
-Copy code
-receive() external payable {}
-Purpose: Allows the contract to accept Ether payments.
-Usage
-Prerequisites
-Solidity development environment (Remix, Hardhat, Truffle, etc.).
-Access to a Web3 wallet (e.g., MetaMask) for interacting with the deployed contract.
-Deployment
-Compile the Contract: Use Remix IDE, Hardhat, or any Solidity-compatible environment.
-Deploy the Contract: Deploy the contract without any constructor parameters.
-Interact with the Contract:
-setPositiveNumber: Call this function with a positive number. If the input is not positive, the transaction will revert with an error.
-divideNumbers: Call this function with two numbers, ensuring the denominator is not zero.
-withdraw: Call this function from the owner’s address to withdraw the contract's balance. Only the owner can successfully execute this function.
-Send Ether: Send Ether to the contract using the receive function by sending a transaction to the contract address.
-Security Considerations
-Ownership: The contract owner has exclusive rights to withdraw funds, making the ownership account critical. Ensure the owner account is secure.
-Assertions: assert() is used to catch internal errors that should never happen. If an assert() fails, it indicates a serious issue that could imply a bug in the contract.
-Error Handling: The require() and revert() statements provide clear error messages, helping users understand why their transactions might fail.
-License
-This contract is licensed under the MIT License.
+## Overview
 
+The `SimpleWallet` contract is a basic Ethereum smart contract that allows the owner to deposit, withdraw, and manage Ether. The contract also provides a way to check the balance and transfer ownership of the wallet to another address. The contract ensures security and correct behavior using `require()`, `assert()`, and `revert()` statements.
 
+## Features
 
+- **Deposit Ether:** Anyone can deposit Ether into the contract.
+- **Withdraw Ether:** Only the owner can withdraw Ether from the contract.
+- **Check Balance:** Anyone can check the current balance of the contract.
+- **Change Owner:** The owner can transfer ownership of the contract to another address.
 
+## Prerequisites
 
+- Solidity ^0.8.20
+- An Ethereum development environment like [Remix](https://remix.ethereum.org/), [Truffle](https://www.trufflesuite.com/truffle), or [Hardhat](https://hardhat.org/).
 
+## Functions
 
+### `constructor()`
 
+- **Description:** Initializes the contract by setting the deployer as the owner.
+
+### `deposit() public payable`
+
+- **Description:** Allows users to deposit Ether into the contract.
+- **Requires:** The deposit amount (`msg.value`) must be greater than zero.
+- **Usage:** Send Ether along with the function call to deposit it into the contract.
+
+### `withdraw(uint256 amount) public`
+
+- **Description:** Allows the owner to withdraw a specified amount of Ether from the contract.
+- **Requires:**
+  - The caller must be the owner.
+  - The contract must have sufficient balance to withdraw the specified amount.
+- **Usage:** Call this function with the desired amount of Ether to withdraw.
+
+### `getBalance() public view returns (uint256)`
+
+- **Description:** Returns the current balance of the contract.
+- **Usage:** Call this function to check how much Ether is currently stored in the contract.
+
+### `changeOwner(address newOwner) public`
+
+- **Description:** Allows the current owner to transfer ownership to another address.
+- **Requires:**
+  - The caller must be the current owner.
+  - The `newOwner` address must not be the zero address.
+- **Usage:** Call this function with the new owner's address to transfer ownership.
+
+## Usage
+
+1. **Deploy the Contract:** 
+   - Deploy the contract on an Ethereum network (e.g., via Remix).
+   - The deployer will automatically become the contract owner.
+
+2. **Deposit Ether:**
+   - Call the `deposit()` function from any address with the desired amount of Ether attached to the transaction.
+
+3. **Withdraw Ether:**
+   - The owner can call the `withdraw()` function with the amount of Ether to withdraw from the contract.
+
+4. **Check Balance:**
+   - Call the `getBalance()` function to check the current Ether balance in the contract.
+
+5. **Change Owner:**
+   - The current owner can call the `changeOwner()` function with a new address to transfer ownership.
+
+## Example
+
+```solidity
+// Example of deploying and interacting with the SimpleWallet contract:
+
+// 1. Deploy the contract
+SimpleWallet wallet = new SimpleWallet();
+
+// 2. Deposit Ether
+wallet.deposit{value: 1 ether}();
+
+// 3. Withdraw Ether (only owner)
+wallet.withdraw(0.5 ether);
+
+// 4. Check balance
+uint256 balance = wallet.getBalance();
+
+// 5. Change owner (only current owner)
+wallet.changeOwner(newOwnerAddress);

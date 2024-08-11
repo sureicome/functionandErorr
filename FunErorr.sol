@@ -1,39 +1,38 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-contract ErrorHandlingDemo {
-    
-    uint256 public positiveNumber;
-
+contract SimpleWallet {
     address public owner;
 
     constructor() {
         owner = msg.sender;
     }
 
-    function setPositiveNumber(uint256 _number) public {
-        require(_number > 0, "Number must be positive");
-        
-        positiveNumber = _number;
+    function deposit() public payable {
+        require(msg.value > 0, "Deposit amount must be greater than zero");
     }
 
-    function divideNumbers(uint256 _numerator, uint256 _denominator) public pure returns (uint256) {
-        require(_denominator != 0, "Denominator cannot be zero");
+    function withdraw(uint256 amount) public {
+        require(msg.sender == owner, "Only the owner can withdraw funds");
 
-        uint256 result = _numerator / _denominator;
+        require(address(this).balance >= amount, "Insufficient balance in the contract");
 
-        assert(result * _denominator == _numerator);
+        payable(owner).transfer(amount);
 
-        return result;
+        assert(address(this).balance >= 0);
     }
 
-    function withdraw() public {
-        if (msg.sender != owner) {
-            revert("Only the owner can withdraw funds");
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function changeOwner(address newOwner) public {
+        require(msg.sender == owner, "Only the current owner can change the owner");
+
+        if (newOwner == address(0)) {
+            revert("New owner cannot be the zero address");
         }
 
-        payable(owner).transfer(address(this).balance);
+        owner = newOwner;
     }
-
-    receive() external payable {}
 }
